@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shinobi Quest: Naruto Training</title>
+    <link rel="stylesheet" href="index.css">
+    <!-- Favicon SVG -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="game-wrapper">
+        <div id="menu-screen" class="screen active">
+            <div class="logo">
+                <h1>SHINOBI<span>QUEST</span></h1>
+                <p>The Ultimate Ninja Training</p>
+            </div>
+            <div id="character-selection">
+                <div class="char-card active" data-char="naruto">
+                    <div class="char-preview naruto"></div>
+                    <span>NARUTO</span>
+                </div>
+                <div class="char-card" data-char="sasuke">
+                    <div class="char-preview sasuke"></div>
+                    <span>SASUKE</span>
+                </div>
+                <div class="char-card" data-char="sakura">
+                    <div class="char-preview sakura"></div>
+                    <span>SAKURA</span>
+                </div>
+                <div class="char-card" data-char="kakashi">
+                    <div class="char-preview kakashi"></div>
+                    <span>KAKASHI</span>
+                </div>
+            </div>
+            <button id="start-btn" class="primary-btn">START MISSION</button>
+            <div class="controls-hint">
+                <p>MOUSE: <span>[LEFT] CLICK BOTTOM</span> SHOOT | <span>[LEFT] CLICK TOP</span> JUMP</p>
+                <p><span>[RIGHT] CLICK</span> CHARGE | <span>[MIDDLE] CLICK</span> RASENGAN</p>
+            </div>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <canvas id="gameCanvas"></canvas>
+            <div id="hud">
+                <div class="stat-group">
+                    <label>CHAKRA</label>
+                    <div class="progress-bar-bg">
+                        <div id="chakra-bar" class="progress-bar"></div>
+                    </div>
+                </div>
+                <div class="stat-group">
+                    <label>HEALTH</label>
+                    <div class="progress-bar-bg">
+                        <div id="health-bar" class="progress-bar health"></div>
+                    </div>
+                </div>
+                <div id="score-display">SCORE: 0</div>
+            </div>
+
+            <div id="mobile-controls">
+                <div class="control-left">
+                    <button id="jump-btn" class="touch-btn">JUMP</button>
+                    <button id="charge-btn" class="touch-btn">CHARGE</button>
+                </div>
+                <div class="control-right">
+                    <button id="shuriken-btn" class="touch-btn">SHURIKEN</button>
+                    <button id="rasengan-btn" class="touch-btn">RASENGAN</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-over-screen" class="screen">
+            <h2>MISSION FAILED</h2>
+            <p id="final-score">SCORE: 0</p>
+            <button id="restart-btn" class="primary-btn">TRY AGAIN</button>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victory-screen" class="screen">
+            <h2 class="victory-text">MISSION ACCOMPLISHED</h2>
+            <p>YOU ARE THE NEW HOKAGE!</p>
+            <p id="victory-score">SCORE: 0</p>
+            <button id="win-menu-btn" class="primary-btn">RETURN TO VILLAGE</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+
+</html>
