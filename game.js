@@ -91,63 +91,58 @@ const boss = {
 
         ctx.save();
         this.floatY = Math.sin(Date.now() * 0.002) * 20;
-        let bx = this.x;
-        let by = this.y + this.floatY;
 
-        // Boss Aura (Uchiha Susanoo Purple)
-        const auraGrad = ctx.createRadialGradient(bx + 60, by + 80, 20, bx + 60, by + 80, 120);
+        ctx.translate(this.x, this.y + this.floatY);
+        ctx.scale(gameScale * 1.5, gameScale * 1.5);
+
+        const auraGrad = ctx.createRadialGradient(60, 80, 20, 60, 80, 120);
         auraGrad.addColorStop(0, 'rgba(128, 0, 255, 0.4)');
         auraGrad.addColorStop(1, 'rgba(128, 0, 255, 0)');
         ctx.fillStyle = auraGrad;
         ctx.beginPath();
-        ctx.arc(bx + 60, by + 80, 100 + Math.sin(Date.now() * 0.01) * 10, 0, Math.PI * 2);
+        ctx.arc(60, 80, 100 + Math.sin(Date.now() * 0.01) * 10, 0, Math.PI * 2);
         ctx.fill();
 
-        // Face/Skin
         ctx.fillStyle = '#fce2c4';
-        ctx.fillRect(bx + 40, by, 40, 40);
+        ctx.fillRect(40, 0, 40, 40);
 
-        // Armor Plates (More realistic)
         ctx.fillStyle = '#800000';
-        ctx.fillRect(bx + 20, by + 40, 80, 100); // Chest
+        ctx.fillRect(20, 40, 80, 100);
         ctx.fillStyle = '#600000';
-        ctx.fillRect(bx + 15, by + 45, 10, 80); // Shoulder Plate L
-        ctx.fillRect(bx + 95, by + 45, 10, 80); // Shoulder Plate R
-        ctx.fillRect(bx + 25, by + 140, 70, 15); // Belt
+        ctx.fillRect(15, 45, 10, 80);
+        ctx.fillRect(95, 45, 10, 80);
+        ctx.fillRect(25, 140, 70, 15);
 
-        // Long Spiky Hair (Black)
         ctx.fillStyle = '#111';
         ctx.beginPath();
-        ctx.moveTo(bx + 30, by);
-        ctx.lineTo(bx + 10, by + 50);
-        ctx.lineTo(bx + 40, by + 30);
-        ctx.lineTo(bx + 60, by + 120);
-        ctx.lineTo(bx + 80, by + 30);
-        ctx.lineTo(bx + 110, by + 50);
-        ctx.lineTo(bx + 90, by);
+        ctx.moveTo(30, 0);
+        ctx.lineTo(10, 50);
+        ctx.lineTo(40, 30);
+        ctx.lineTo(60, 120);
+        ctx.lineTo(80, 30);
+        ctx.lineTo(110, 50);
+        ctx.lineTo(90, 0);
         ctx.fill();
 
-        // Sharingan Eyes
         ctx.fillStyle = 'red';
-        ctx.fillRect(bx + 50, by + 15, 4, 4);
-        ctx.fillRect(bx + 66, by + 15, 4, 4);
-
-        // Boss Health Bar
-        const barWidth = 400;
-        const hPercent = this.health / this.maxHealth;
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(canvas.width / 2 - barWidth / 2, 50, barWidth, 20);
-        ctx.fillStyle = '#ff0000';
-        ctx.fillRect(canvas.width / 2 - barWidth / 2, 50, barWidth * hPercent, 20);
-        ctx.strokeStyle = '#fff';
-        ctx.strokeRect(canvas.width / 2 - barWidth / 2, 50, barWidth, 20);
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 16px Outfit';
-        ctx.fillText('MADARA UCHIHA', canvas.width / 2 - 60, 40);
+        ctx.fillRect(50, 15, 4, 4);
+        ctx.fillRect(66, 15, 4, 4);
 
         ctx.restore();
 
-        // Draw Boss Projectiles (Fireballs)
+        const barWidth = 600 * gameScale;
+        const hPercent = this.health / this.maxHealth;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(canvas.width / 2 - barWidth / 2, 50, barWidth, 30);
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(canvas.width / 2 - barWidth / 2, 50, barWidth * hPercent, 30);
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(canvas.width / 2 - barWidth / 2, 50, barWidth, 30);
+        ctx.fillStyle = '#fff';
+        ctx.font = `bold ${24 * gameScale}px Outfit`;
+        ctx.fillText('MADARA UCHIHA', canvas.width / 2 - 100 * gameScale, 40);
+
         this.projectiles.forEach(p => {
             const fGrad = ctx.createRadialGradient(p.x, p.y, 5, p.x, p.y, 20);
             fGrad.addColorStop(0, '#fff');
@@ -163,7 +158,6 @@ const boss = {
     update() {
         if (!this.active) return;
 
-        // Movement
         if (this.x > canvas.width - 250) {
             this.x -= 2;
         }
@@ -171,12 +165,11 @@ const boss = {
         this.attackTimer++;
         if (this.attackTimer > 100) {
             this.attackTimer = 0;
-            // Shoot fireball
             this.projectiles.push({
                 x: this.x,
                 y: this.y + 80 + this.floatY,
                 vx: -7,
-                vy: (player.y - this.y) * 0.01 // Home in slightly
+                vy: (player.y - this.y) * 0.01
             });
         }
 
@@ -184,7 +177,6 @@ const boss = {
             p.x += p.vx;
             p.y += p.vy;
 
-            // Collision with player
             if (invincibilityFrames <= 0 &&
                 Math.hypot(p.x - (player.x + 30), p.y - (player.y + 40)) < 40) {
                 health -= DIFFICULTY.damageTaken * 2;
@@ -197,12 +189,11 @@ const boss = {
             if (p.x < -50) this.projectiles.splice(index, 1);
         });
 
-        // Collision with player projectiles
         player.shurikens.forEach((s, index) => {
             if (s.x > this.x && s.x < this.x + this.width &&
                 s.y > this.y + this.floatY && s.y < this.y + this.floatY + this.height) {
                 this.health -= 20;
-                impactFlash = 5; // Flash on hit
+                impactFlash = 5;
                 player.shurikens.splice(index, 1);
                 this.checkDeath();
             }
@@ -212,7 +203,7 @@ const boss = {
             if (r.x + 30 > this.x && r.x - 30 < this.x + this.width &&
                 r.y + 30 > this.y + this.floatY && r.y - 30 < this.y + this.floatY + this.height) {
                 this.health -= 50;
-                impactFlash = 10; // Bigger flash for Rasengan
+                impactFlash = 10;
                 screenShake = 5;
                 this.checkDeath();
             }
@@ -226,7 +217,6 @@ const boss = {
             score += 5000;
             screenShake = 50;
             impactFlash = 20;
-            // Delay victory screen for cinematic effect
             setTimeout(() => {
                 if (gameState === 'playing') victory();
             }, 2000);
@@ -234,27 +224,27 @@ const boss = {
     }
 };
 
-// ... (rest of the objects/resize)
-
-// Inside gameLoop, add boss logic:
-// boss.update();
-// boss.draw();
-// if (score > DIFFICULTY.bossSpawnScore && !boss.active && !isBossFight) boss.init();
-
-// Inside startGame, reset boss:
-// boss.active = false;
-// boss.projectiles = [];
-// isBossFight = false;
-
 // Set canvas dimensions
+let gameScale = 1;
+
 function resize() {
     const wrapper = document.getElementById('game-wrapper');
     if (!wrapper) return;
     canvas.width = wrapper.clientWidth;
     canvas.height = wrapper.clientHeight;
+
+    // Scale factor based on standard laptop height (around 600px usable)
+    gameScale = canvas.height / 600;
+
+    // Scale player and other entities
+    if (player) {
+        player.width = 60 * gameScale;
+        player.height = 80 * gameScale;
+        player.gravity = 0.7 * gameScale;
+        player.jumpStrength = -16 * gameScale;
+    }
 }
 window.addEventListener('resize', resize);
-resize();
 
 // Player object
 const player = {
@@ -279,140 +269,127 @@ const player = {
         this.tick++;
         if (this.tick % 10 === 0) this.frame = (this.frame + 1) % 4;
 
-        const groundY = canvas.height - 70;
         ctx.save();
-
         if (invincibilityFrames > 0 && Math.floor(this.tick / 5) % 2 === 0) ctx.globalAlpha = 0.5;
 
+        // Apply global scale and translate to player position
+        ctx.translate(this.x, this.y);
+        ctx.scale(gameScale, gameScale);
+
         let tilt = (!this.isJumping && !this.isCharging) ? 0.2 : 0;
-        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         ctx.rotate(tilt);
-        ctx.translate(-(this.x + this.width / 2), -(this.y + this.height / 2));
 
         // Power Aura
         if (this.isCharging || (this.character === 'naruto' && chakra > 80)) {
             ctx.shadowBlur = 20;
             ctx.shadowColor = char.specialColor;
-            const auraGrad = ctx.createRadialGradient(this.x + 30, this.y + 40, 10, this.x + 30, this.y + 40, 90);
+            const auraGrad = ctx.createRadialGradient(30, 40, 10, 30, 40, 90);
             let auraColor = char.specialColor;
             if (this.character === 'naruto' && chakra > 80) auraColor = '#FFD700';
             auraGrad.addColorStop(0, auraColor + 'AA');
             auraGrad.addColorStop(1, 'transparent');
             ctx.fillStyle = auraGrad;
             ctx.beginPath();
-            ctx.arc(this.x + 30, this.y + 40, 75 + Math.sin(this.tick * 0.2) * 12, 0, Math.PI * 2);
+            ctx.arc(30, 40, 75 + Math.sin(this.tick * 0.2) * 12, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
         }
 
-        // Draw Character Components
-        const px = this.x;
-        const py = this.y;
-
         // 1. LEGS (Running Animation)
-        ctx.fillStyle = (this.character === 'sakura') ? '#FFCCAA' : '#333'; // Sakura has bare legs mostly
-        let legL = Math.sin(this.tick * 0.2) * 15;
-        let legR = -legL;
-        ctx.fillRect(px + 10, py + 60 + (this.frame % 2 === 0 ? 5 : -5), 18, 20); // Left Leg
-        ctx.fillRect(px + 32, py + 60 + (this.frame % 2 === 0 ? -5 : 5), 18, 20); // Right Leg
+        ctx.fillStyle = (this.character === 'sakura') ? '#FFCCAA' : '#333';
+        ctx.fillRect(10, 60 + (this.frame % 2 === 0 ? 5 : -5), 18, 20); // Left Leg
+        ctx.fillRect(32, 60 + (this.frame % 2 === 0 ? -5 : 5), 18, 20); // Right Leg
 
         // 2. BODY/SUIT
         ctx.fillStyle = char.suit;
-        ctx.fillRect(px + 5, py + 20, 50, 45);
+        ctx.fillRect(5, 20, 50, 45);
 
-        // Character Specific Suit Details
         if (this.character === 'naruto') {
-            ctx.fillStyle = '#111'; // Black shoulders
-            ctx.fillRect(px + 5, py + 20, 50, 10);
-            ctx.fillRect(px + 22, py + 30, 6, 35); // Zipper
+            ctx.fillStyle = '#111';
+            ctx.fillRect(5, 20, 50, 10);
+            ctx.fillRect(22, 30, 6, 35);
         } else if (this.character === 'sasuke') {
-            ctx.fillStyle = '#eee'; // Uchiha crest spot
+            ctx.fillStyle = '#eee';
             ctx.beginPath();
-            ctx.arc(px + 30, py + 35, 10, 0, Math.PI * 2);
+            ctx.arc(30, 35, 10, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = '#f00';
-            ctx.fillRect(px + 25, py + 35, 10, 5); // Red part of crest
+            ctx.fillRect(25, 35, 10, 5);
         } else if (this.character === 'kakashi') {
-            ctx.fillStyle = '#4a5d5c'; // Vest details
-            ctx.fillRect(px + 10, py + 25, 40, 35);
+            ctx.fillStyle = '#4a5d5c';
+            ctx.fillRect(10, 25, 40, 35);
             ctx.strokeStyle = '#2d3b3a';
             ctx.lineWidth = 2;
-            ctx.strokeRect(px + 15, py + 30, 30, 25); // Pockets
+            ctx.strokeRect(15, 30, 30, 25);
         }
 
         // 3. FACE & HEAD
         ctx.fillStyle = '#FFCCAA';
-        ctx.fillRect(px + 15, py, 30, 25);
+        ctx.fillRect(15, 0, 30, 25);
 
-        // Character Specific Face Details
         if (this.character === 'kakashi') {
-            ctx.fillStyle = '#444'; // Mask
-            ctx.fillRect(px + 15, py + 12, 30, 13);
+            ctx.fillStyle = '#444';
+            ctx.fillRect(15, 12, 30, 13);
         } else if (this.character === 'naruto') {
-            // Whiskers
             ctx.strokeStyle = 'rgba(0,0,0,0.3)';
             ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(px + 35, py + 12); ctx.lineTo(px + 42, py + 11);
-            ctx.moveTo(px + 35, py + 14); ctx.lineTo(px + 42, py + 14);
-            ctx.moveTo(px + 35, py + 16); ctx.lineTo(px + 42, py + 17);
+            ctx.moveTo(35, 12); ctx.lineTo(42, 11);
+            ctx.moveTo(35, 14); ctx.lineTo(42, 14);
+            ctx.moveTo(35, 16); ctx.lineTo(42, 17);
             ctx.stroke();
         } else if (this.character === 'sakura') {
-            ctx.fillStyle = '#8000FF'; // Forehead seal
+            ctx.fillStyle = '#8000FF';
             ctx.beginPath();
-            ctx.arc(px + 30, py + 8, 2, 0, Math.PI * 2);
+            ctx.arc(30, 8, 2, 0, Math.PI * 2);
             ctx.fill();
         }
 
-        // 4. EYES (Sharingan/Kurama)
+        // 4. EYES
         ctx.fillStyle = char.eyeColor;
         if (this.character === 'naruto' && chakra > 80) ctx.fillStyle = 'red';
-        ctx.fillRect(px + 32, py + 10, 5, 2);
+        ctx.fillRect(32, 10, 5, 2);
         if (this.character === 'kakashi' || this.character === 'sasuke') {
             ctx.shadowBlur = 8;
             ctx.shadowColor = 'red';
             ctx.fillStyle = '#ff0000';
-            ctx.fillRect(px + 32, py + 10, 5, 3);
+            ctx.fillRect(32, 10, 5, 3);
             ctx.shadowBlur = 0;
         }
 
         // 5. HEADBAND
         ctx.fillStyle = char.headband;
-        ctx.fillRect(px + 12, py + 2, 36, 8);
-        ctx.fillStyle = '#aaa'; // Metal Plate
-        ctx.fillRect(px + 24, py + 3, 12, 6);
+        ctx.fillRect(12, 2, 36, 8);
+        ctx.fillStyle = '#aaa';
+        ctx.fillRect(24, 3, 12, 6);
 
         // 6. HAIR
         ctx.fillStyle = char.hair;
         ctx.beginPath();
-        const hx = px + 12;
-        const hy = py + 3;
+        const hx = 12;
+        const hy = 3;
         ctx.moveTo(hx, hy);
         if (this.character === 'kakashi') {
-            // Slanted Kakashi hair
             ctx.lineTo(hx - 10, hy - 30);
             ctx.lineTo(hx + 10, hy - 20);
             ctx.lineTo(hx + 20, hy - 35);
             ctx.lineTo(hx + 30, hy - 15);
             ctx.lineTo(hx + 36, hy);
         } else if (this.character === 'naruto') {
-            // Spiky Naruto hair
             for (let i = 0; i < 6; i++) {
                 ctx.lineTo(hx + i * 6 + 3, hy - 15);
                 ctx.lineTo(hx + (i + 1) * 6, hy);
             }
         } else if (this.character === 'sasuke') {
-            // Sasuke spiky back hair
             ctx.lineTo(hx, hy - 20);
             ctx.lineTo(hx + 15, hy - 10);
             ctx.lineTo(hx + 30, hy - 25);
             ctx.lineTo(hx + 36, hy);
         } else {
-            // Sakura long hair
             ctx.lineTo(hx, hy - 10);
             ctx.lineTo(hx + 18, hy - 15);
             ctx.lineTo(hx + 36, hy - 10);
-            ctx.lineTo(hx + 36, hy + 40); // Long hair down
+            ctx.lineTo(hx + 36, hy + 40);
             ctx.lineTo(hx, hy + 40);
         }
         ctx.fill();
@@ -425,7 +402,8 @@ const player = {
         if (invincibilityFrames > 0) invincibilityFrames--;
 
         const char = CHARACTERS[this.character];
-        const groundY = canvas.height - 70 - this.height;
+        const groundHeight = 70 * gameScale;
+        const groundY = canvas.height - groundHeight - this.height;
 
         // --- UNIQUE CHARACTER PASSIVE ABILITIES ---
 
@@ -437,8 +415,6 @@ const player = {
         if (this.character === 'sakura' && chakra > 70 && health < 100 && this.tick % 60 === 0) {
             health = Math.min(100, health + 2);
         }
-
-        // Kakashi: Longer invincibility duration handled by setting it higher later
 
         if (this.y === groundY && !this.isCharging) {
             chakra = Math.min(100, chakra + DIFFICULTY.autoChargeRegen * regenMod);
@@ -501,13 +477,14 @@ document.querySelectorAll('.char-card').forEach(card => {
 const enemies = [];
 function spawnEnemy() {
     if (gameState !== 'playing') return;
-    const groundY = canvas.height - 70 - 80;
+    const groundHeight = 70 * gameScale;
+    const groundY = canvas.height - groundHeight - player.height;
     enemies.push({
         x: canvas.width + 100,
         y: groundY,
-        width: 50,
-        height: 80,
-        speed: DIFFICULTY.enemySpeedBase + (score / 2000) + Math.random() * 2,
+        width: 50 * gameScale,
+        height: 80 * gameScale,
+        speed: (DIFFICULTY.enemySpeedBase + (score / 2000) + Math.random() * 2) * gameScale,
         color: '#333'
     });
 }
@@ -543,6 +520,18 @@ const jumpBtn = document.getElementById('jump-btn');
 const chargeBtn = document.getElementById('charge-btn');
 const shurikenBtn = document.getElementById('shuriken-btn');
 const rasenganBtn = document.getElementById('rasengan-btn');
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+function toggleFullscreen() {
+    const wrapper = document.getElementById('game-wrapper');
+    if (!document.fullscreenElement) {
+        wrapper.requestFullscreen().catch(err => {
+            console.warn(`Fullscreen failed: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
 
 function updateHUD() {
     chakraBar.style.width = `${chakra}%`;
@@ -564,6 +553,12 @@ function startGame() {
     boss.active = false;
     boss.projectiles = [];
     isBossFight = false;
+
+    // Request fullscreen on start
+    const wrapper = document.getElementById('game-wrapper');
+    if (!document.fullscreenElement) {
+        wrapper.requestFullscreen().catch(() => { });
+    }
 
     menuScreen.classList.remove('active');
     gameOverScreen.classList.remove('active');
@@ -633,13 +628,14 @@ function gameLoop(time) {
     spawnParallax();
 
     // 4. THE GROUND
-    const groundY = canvas.height - 70;
+    const groundHeight = 70 * gameScale;
+    const groundY = canvas.height - groundHeight;
     ctx.fillStyle = '#111';
-    ctx.fillRect(0, groundY, canvas.width, 70);
+    ctx.fillRect(0, groundY, canvas.width, groundHeight);
     ctx.strokeStyle = '#222';
     ctx.lineWidth = 1;
-    for (let i = 0; i < canvas.width; i += 50) {
-        ctx.strokeRect(i, groundY, 50, 70); // Ground grid
+    for (let i = 0; i < canvas.width; i += 50 * gameScale) {
+        ctx.strokeRect(i, groundY, 50 * gameScale, groundHeight); // Ground grid
     }
 
     // Impact Flash Overlay
@@ -669,6 +665,7 @@ function gameLoop(time) {
         ctx.save();
         ctx.translate(s.x, s.y);
         ctx.rotate(s.rotation);
+        ctx.scale(gameScale, gameScale);
         ctx.fillStyle = '#777';
         ctx.beginPath();
         for (let i = 0; i < 4; i++) {
@@ -686,15 +683,16 @@ function gameLoop(time) {
         ctx.save();
         ctx.translate(r.x, r.y);
         ctx.rotate(r.rotation);
+        ctx.scale(gameScale, gameScale);
 
-        const rGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, 30);
+        const rGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, 40);
         rGrad.addColorStop(0, '#fff');
         rGrad.addColorStop(0.5, r.color || '#0088FF');
         rGrad.addColorStop(1, 'transparent');
 
         ctx.fillStyle = rGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, 30, 0, Math.PI * 2);
+        ctx.arc(0, 0, 40, 0, Math.PI * 2);
         ctx.fill();
 
         // Inner swirls / Lightning effects
@@ -702,13 +700,12 @@ function gameLoop(time) {
         ctx.lineWidth = 2;
         ctx.beginPath();
         if (r.name === 'CHIDORI') {
-            // Jagged lightning lines
             for (let i = 0; i < 5; i++) {
                 ctx.moveTo(0, 0);
-                ctx.lineTo((Math.random() - 0.5) * 40, (Math.random() - 0.5) * 40);
+                ctx.lineTo((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60);
             }
         } else {
-            ctx.arc(0, 0, 15, 0, Math.PI * 1.5);
+            ctx.arc(0, 0, 20, 0, Math.PI * 1.5);
         }
         ctx.stroke();
 
@@ -719,13 +716,18 @@ function gameLoop(time) {
     enemies.forEach((enemy, index) => {
         enemy.x -= enemy.speed;
 
+        ctx.save();
+        ctx.translate(enemy.x, enemy.y);
+        ctx.scale(gameScale, gameScale);
+
         // Ninja Enemy
         ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(enemy.x, enemy.y + 20, enemy.width, 60);
+        ctx.fillRect(0, 20, 50, 60);
         ctx.fillStyle = '#FFCCAA';
-        ctx.fillRect(enemy.x + 10, enemy.y, 30, 20);
+        ctx.fillRect(10, 0, 30, 20);
         ctx.fillStyle = '#333';
-        ctx.fillRect(enemy.x + 10, enemy.y + 10, 30, 10);
+        ctx.fillRect(10, 10, 30, 10);
+        ctx.restore();
 
         // Collision with Shuriken (More forgiving)
         player.shurikens.forEach((shuriken, sIndex) => {
@@ -855,8 +857,12 @@ winMenuBtn.addEventListener('click', () => {
     gameState = 'menu';
     victoryScreen.classList.remove('active');
     menuScreen.classList.add('active');
+    resize();
 });
 
+fullscreenBtn.addEventListener('click', toggleFullscreen);
+
 // Init
+resize();
 updateHUD();
 
