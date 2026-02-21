@@ -130,7 +130,7 @@ const boss = {
 
         ctx.restore();
 
-        const barWidth = 600 * gameScale;
+        const barWidth = Math.min(canvas.width - 40, 600 * gameScale);
         const hPercent = this.health / this.maxHealth;
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(canvas.width / 2 - barWidth / 2, 50, barWidth, 30);
@@ -140,7 +140,7 @@ const boss = {
         ctx.lineWidth = 2;
         ctx.strokeRect(canvas.width / 2 - barWidth / 2, 50, barWidth, 30);
         ctx.fillStyle = '#fff';
-        ctx.font = `bold ${24 * gameScale}px Outfit`;
+        ctx.font = `bold ${Math.max(16, 24 * gameScale)}px Outfit`;
         ctx.fillText('MADARA UCHIHA', canvas.width / 2 - 100 * gameScale, 40);
 
         this.projectiles.forEach(p => {
@@ -416,7 +416,7 @@ const player = {
             health = Math.min(100, health + 2);
         }
 
-        if (this.y === groundY && !this.isCharging) {
+        if (this.y >= groundY - 1 && !this.isCharging) {
             chakra = Math.min(100, chakra + DIFFICULTY.autoChargeRegen * regenMod);
         }
 
@@ -428,7 +428,7 @@ const player = {
             this.vy += this.gravity;
         }
 
-        if (this.y > groundY) { this.y = groundY; this.vy = 0; this.isJumping = false; }
+        if (this.y >= groundY) { this.y = groundY; this.vy = 0; this.isJumping = false; }
 
         this.shurikens.forEach((s, idx) => {
             s.x += 12; s.rotation += 0.5;
@@ -802,14 +802,14 @@ function gameLoop(time) {
 
 // Inputs
 window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') player.jump();
-    if (e.code === 'KeyF') player.shoot();
-    if (e.code === 'KeyD') player.rasengan();
-    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') player.isCharging = true;
+    if (e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp') player.jump();
+    if (e.code === 'KeyF' || e.code === 'KeyE' || e.code === 'Enter') player.shoot();
+    if (e.code === 'KeyD' || e.code === 'KeyQ') player.rasengan();
+    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'KeyS' || e.code === 'ArrowDown') player.isCharging = true;
 });
 
 window.addEventListener('keyup', (e) => {
-    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') player.isCharging = false;
+    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'KeyS' || e.code === 'ArrowDown') player.isCharging = false;
 });
 
 // Mouse Controls
