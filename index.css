@@ -51,16 +51,100 @@ body {
     }
 
     #hud {
-        flex-direction: column;
-        gap: 10px;
+        padding: 5px 10px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 0 0 15px 15px;
+        align-items: center;
     }
 
     .stat-group {
-        width: 150px;
+        width: 120px;
+    }
+
+    .stat-group label {
+        font-size: 0.7rem;
+        margin-bottom: 2px;
+    }
+
+    .progress-bar-bg {
+        height: 12px;
     }
 
     #score-display {
+        font-size: 1.2rem;
+    }
+
+    #level-display {
+        font-size: 0.9rem;
+    }
+
+    #character-selection {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 1.5rem;
+    }
+
+    .char-card {
+        width: 140px;
+        padding: 15px;
+    }
+
+    .char-preview {
+        width: 60px;
+        height: 60px;
+    }
+
+    .primary-btn {
+        padding: 1rem 3rem;
         font-size: 1.5rem;
+    }
+}
+
+/* Orientation Warning */
+#orientation-warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--dark);
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+@media screen and (orientation: portrait) and (max-width: 1024px) {
+    #orientation-warning {
+        display: flex;
+    }
+}
+
+.warning-content h2 {
+    color: var(--primary);
+    font-size: 1.5rem;
+    margin: 1rem 0;
+}
+
+.phone-icon {
+    font-size: 4rem;
+    animation: rotate 2s ease-in-out infinite;
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    50% {
+        transform: rotate(90deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
     }
 }
 
@@ -307,6 +391,15 @@ body {
     text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
+#level-display {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
 canvas {
     width: 100%;
     height: 100%;
@@ -346,24 +439,26 @@ canvas {
 }
 
 .touch-btn {
-    width: 100px;
-    height: 60px;
-    background: var(--glass);
-    border: 2px solid var(--primary);
-    border-radius: 12px;
+    width: 120px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid var(--primary);
+    border-radius: 20px;
     color: white;
     font-weight: 900;
-    font-size: 0.8rem;
+    font-size: 1rem;
     backdrop-filter: blur(10px);
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     transition: transform 0.1s, background 0.1s;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .touch-btn:active {
     transform: scale(0.9);
     background: var(--primary);
+    box-shadow: 0 0 30px var(--primary);
 }
 
 #rasengan-btn {

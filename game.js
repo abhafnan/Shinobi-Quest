@@ -10,6 +10,8 @@ let health = 100;
 let screenShake = 0;
 let invincibilityFrames = 0;
 let isBossFight = false;
+let currentLevel = 1;
+let levelBannerTimer = 0;
 
 // Character data
 const CHARACTERS = {
@@ -37,16 +39,52 @@ const CHARACTERS = {
 
 let selectedChar = 'naruto';
 
-// Difficulty settings (Easy Mode)
+const LEVELS = [
+    {
+        name: "Genin Training",
+        enemySpawnRate: 0.01,
+        enemySpeedBase: 3.5,
+        bossSpawnScore: 2000,
+        bossHealth: 2000,
+        bossName: "MADARA UCHIHA",
+        color: 'rgba(128, 0, 255, 0.4)'
+    },
+    {
+        name: "Chunin Exams",
+        enemySpawnRate: 0.015,
+        enemySpeedBase: 4.5,
+        bossSpawnScore: 5000,
+        bossHealth: 3500,
+        bossName: "OROCHIMARU",
+        color: 'rgba(0, 200, 0, 0.4)'
+    },
+    {
+        name: "Jonin Mission",
+        enemySpawnRate: 0.02,
+        enemySpeedBase: 5.5,
+        bossSpawnScore: 9000,
+        bossHealth: 5000,
+        bossName: "PAIN",
+        color: 'rgba(255, 100, 0, 0.4)'
+    },
+    {
+        name: "Fourth Shinobi War",
+        enemySpawnRate: 0.025,
+        enemySpeedBase: 6.5,
+        bossSpawnScore: 15000,
+        bossHealth: 8000,
+        bossName: "KAGUYA OTSUTSUKI",
+        color: 'rgba(255, 255, 255, 0.4)'
+    }
+];
+
+// Base settings (modified by levels)
 const DIFFICULTY = {
-    enemySpawnRate: 0.01,
-    enemySpeedBase: 3.5,
     chakraRegen: 0.5,
     autoChargeRegen: 1.5,
     damageTaken: 5,
     rasenganCost: 20,
     invincibilityDuration: 90,
-    bossSpawnScore: 2000,
 };
 
 // Physics and State
@@ -79,9 +117,11 @@ const boss = {
     floatY: 0,
 
     init() {
+        const lv = LEVELS[currentLevel - 1];
         this.active = true;
         this.x = canvas.width + 200;
         this.y = 200;
+        this.maxHealth = lv.bossHealth;
         this.health = this.maxHealth;
         isBossFight = true;
     },
@@ -95,9 +135,10 @@ const boss = {
         ctx.translate(this.x, this.y + this.floatY);
         ctx.scale(gameScale * 1.5, gameScale * 1.5);
 
+        const lv = LEVELS[currentLevel - 1];
         const auraGrad = ctx.createRadialGradient(60, 80, 20, 60, 80, 120);
-        auraGrad.addColorStop(0, 'rgba(128, 0, 255, 0.4)');
-        auraGrad.addColorStop(1, 'rgba(128, 0, 255, 0)');
+        auraGrad.addColorStop(0, lv.color);
+        auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = auraGrad;
         ctx.beginPath();
         ctx.arc(60, 80, 100 + Math.sin(Date.now() * 0.01) * 10, 0, Math.PI * 2);
@@ -141,7 +182,7 @@ const boss = {
         ctx.strokeRect(canvas.width / 2 - barWidth / 2, 50, barWidth, 30);
         ctx.fillStyle = '#fff';
         ctx.font = `bold ${Math.max(16, 24 * gameScale)}px Outfit`;
-        ctx.fillText('MADARA UCHIHA', canvas.width / 2 - 100 * gameScale, 40);
+        ctx.fillText(lv.bossName, canvas.width / 2 - 100 * gameScale, 40);
 
         this.projectiles.forEach(p => {
             const fGrad = ctx.createRadialGradient(p.x, p.y, 5, p.x, p.y, 20);
@@ -214,12 +255,24 @@ const boss = {
         if (this.health <= 0) {
             this.active = false;
             isBossFight = false;
-            score += 5000;
+            score += 5000 * currentLevel;
             screenShake = 50;
             impactFlash = 20;
-            setTimeout(() => {
-                if (gameState === 'playing') victory();
-            }, 2000);
+
+            if (currentLevel < LEVELS.length) {
+                setTimeout(() => {
+                    if (gameState === 'playing') {
+                        currentLevel++;
+                        levelBannerTimer = 180; // 3 seconds at 60fps
+                        // Clear enemies for level transition
+                        enemies.length = 0;
+                    }
+                }, 2000);
+            } else {
+                setTimeout(() => {
+                    if (gameState === 'playing') victory();
+                }, 2000);
+            }
         }
     }
 };
@@ -441,11 +494,18 @@ const player = {
         });
     },
 
-    jump() { if (!this.isJumping) { this.vy = this.jumpStrength; this.isJumping = true; } },
+    jump() {
+        if (!this.isJumping) {
+            this.vy = this.jumpStrength;
+            this.isJumping = true;
+            if (navigator.vibrate) navigator.vibrate(5);
+        }
+    },
     shoot() {
         if (chakra >= 5) {
             this.shurikens.push({ x: this.x + this.width, y: this.y + this.height / 2, rotation: 0 });
             chakra -= 5; updateHUD();
+            if (navigator.vibrate) navigator.vibrate(10);
         }
     },
     rasengan() {
@@ -460,6 +520,7 @@ const player = {
             chakra -= DIFFICULTY.rasenganCost;
             screenShake = 10;
             updateHUD();
+            if (navigator.vibrate) navigator.vibrate([20, 30, 20]);
         }
     }
 };
@@ -479,12 +540,13 @@ function spawnEnemy() {
     if (gameState !== 'playing') return;
     const groundHeight = 70 * gameScale;
     const groundY = canvas.height - groundHeight - player.height;
+    const lv = LEVELS[currentLevel - 1];
     enemies.push({
         x: canvas.width + 100,
         y: groundY,
         width: 50 * gameScale,
         height: 80 * gameScale,
-        speed: (DIFFICULTY.enemySpeedBase + (score / 2000) + Math.random() * 2) * gameScale,
+        speed: (lv.enemySpeedBase + (score / 5000) + Math.random() * 2) * gameScale,
         color: '#333'
     });
 }
@@ -514,6 +576,7 @@ const finalScoreDisplay = document.getElementById('final-score');
 const victoryScreen = document.getElementById('victory-screen');
 const victoryScoreDisplay = document.getElementById('victory-score');
 const winMenuBtn = document.getElementById('win-menu-btn');
+const levelDisplay = document.getElementById('level-display');
 
 // Mobile Buttons
 const jumpBtn = document.getElementById('jump-btn');
@@ -537,6 +600,7 @@ function updateHUD() {
     chakraBar.style.width = `${chakra}%`;
     healthBar.style.width = `${health}%`;
     scoreDisplay.innerText = `SCORE: ${Math.floor(score)}`;
+    levelDisplay.innerText = `LEVEL: ${currentLevel}`;
 }
 
 function startGame() {
@@ -553,6 +617,9 @@ function startGame() {
     boss.active = false;
     boss.projectiles = [];
     isBossFight = false;
+    currentLevel = 1;
+    levelBannerTimer = 180;
+    enemies.length = 0;
 
     // Request fullscreen on start
     const wrapper = document.getElementById('game-wrapper');
@@ -772,6 +839,7 @@ function gameLoop(time) {
             invincibilityFrames = player.character === 'kakashi' ? DIFFICULTY.invincibilityDuration * 2 : DIFFICULTY.invincibilityDuration;
             enemies.splice(index, 1);
             screenShake = 15;
+            if (navigator.vibrate) navigator.vibrate(50);
             if (health <= 0) gameOver();
         }
 
@@ -783,18 +851,37 @@ function gameLoop(time) {
         if (enemy.x + enemy.width < 0) enemies.splice(index, 1);
     });
 
-    if (!isBossFight && Math.random() < DIFFICULTY.enemySpawnRate) spawnEnemy();
-
-    if (score > DIFFICULTY.bossSpawnScore && !boss.active && !isBossFight) {
-        boss.init();
-    }
-
     boss.update();
     boss.draw();
+
+    // Draw Level Banner
+    if (levelBannerTimer > 0) {
+        levelBannerTimer--;
+        const lv = LEVELS[currentLevel - 1];
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(0, canvas.height / 2 - 60, canvas.width, 120);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#fff';
+        ctx.font = `bold ${Math.max(20, 30 * gameScale)}px Outfit`;
+        ctx.fillText(`LEVEL ${currentLevel}: ${lv.name}`, canvas.width / 2, canvas.height / 2);
+
+        ctx.font = `${Math.max(14, 20 * gameScale)}px Outfit`;
+        ctx.fillStyle = '#aaa';
+        ctx.fillText("BEAT THE BOSS TO PROGRESS", canvas.width / 2, canvas.height / 2 + 35);
+        ctx.restore();
+    }
 
     score += 0.1;
     if (!player.isCharging) chakra = Math.min(100, chakra + DIFFICULTY.chakraRegen);
     updateHUD();
+
+    if (!isBossFight && Math.random() < LEVELS[currentLevel - 1].enemySpawnRate) spawnEnemy();
+
+    if (score > LEVELS[currentLevel - 1].bossSpawnScore * (1 + (currentLevel - 1) * 0.5) && !boss.active && !isBossFight) {
+        boss.init();
+    }
 
     ctx.restore();
     requestAnimationFrame(gameLoop);
